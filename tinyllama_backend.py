@@ -25,8 +25,7 @@ class MistralPipeline:
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
-            device_map="auto" if self.device == "cuda" else None,
-            load_in_8bit=False  # Use half precision instead for memory efficiency
+            device_map="auto" if self.device == "cuda" else None
         )
         
         if self.device == "cpu":
