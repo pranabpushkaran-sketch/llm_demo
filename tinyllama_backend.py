@@ -1,26 +1,32 @@
 """
-TinyLLM Backend for Interactive AI Demo
-Uses transformers library to run TinyLLama locally
+Mistral 7B Backend for Interactive AI Demo
+Uses transformers library to run Mistral 7B locally
+Optimized for Streamlit Cloud deployment
 """
 
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import streamlit as st
 
-class TinyLLMPipeline:
-    """TinyLLM Pipeline for text generation"""
+class MistralPipeline:
+    """Mistral 7B Pipeline for text generation"""
     
     def __init__(self):
-        """Initialize Mistral model"""
+        """Initialize Mistral 7B Instruct model"""
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model_name = "mistralai/Mistral-7B-Instruct-v0.1"
         
-        # Load tokenizer and model
+        # Load tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        if self.tokenizer.pad_token is None:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+        
+        # Load model with optimizations for cloud
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
-            device_map="auto" if self.device == "cuda" else None
+            device_map="auto" if self.device == "cuda" else None,
+            load_in_8bit=False  # Use half precision instead for memory efficiency
         )
         
         if self.device == "cpu":
@@ -116,11 +122,11 @@ class TinyLLMPipeline:
 
 
 @st.cache_resource
-def load_tinyllm():
-    """Load TinyLLM model once and cache it"""
-    return TinyLLMPipeline()
+def load_mistral():
+    """Load Mistral 7B model once and cache it"""
+    return MistralPipeline()
 
 
 def get_pipeline():
-    """Get or create TinyLLM pipeline"""
-    return load_tinyllm()
+    """Get or create Mistral pipeline"""
+    return load_mistral()
